@@ -1,9 +1,39 @@
 /// <reference types="cypress" />
 
 describe('Sign In page', () => {
-  it('should log in with proper credentials', () => {
+  beforeEach(() => {
     cy.visit('https://the-internet.herokuapp.com/login');
+  });
 
+  it('should log in with proper credentials', () => {
+    cy.get('#username').should('be.visible').type('tomsmith');
+    cy.get('#password').should('be.visible').type('SuperSecretPassword!');
+
+    cy.get('button')
+      .contains(/login/i)
+      .should('be.visible')
+      .click();
+
+    cy.url().should('include', '/secure');
+
+    cy.get('h2')
+      .should('contain', 'Secure Area');
+  });
+
+  it('should not log in with improper credentials', () => {
+    cy.get('#username').should('be.visible').type('dunno');
+    cy.get('#password').should('be.visible').type('idunno1234');
+
+    cy.get('button')
+      .contains(/login/i)
+      .should('be.visible')
+      .click();
+
+    cy.get('#flash', { timeout: 10000 })
+      .should('contain', 'Your username is invalid!');
+  });
+
+  it('should log out', () => {
     cy.get('#username').should('be.visible').type('tomsmith');
     cy.get('#password').should('be.visible').type('SuperSecretPassword!');
 
@@ -26,16 +56,5 @@ describe('Sign In page', () => {
 
     cy.get('#flash')
       .should('contain', 'You logged out of the secure area!');
-
-    cy.get('#username').should('be.visible').type('dunno');
-    cy.get('#password').should('be.visible').type('idunno1234');
-
-    cy.get('button')
-      .contains(/login/i)
-      .should('be.visible')
-      .click();
-
-    cy.get('#flash', { timeout: 10000 }) // чекає до 10 секунд
-      .should('contain', 'Your username is invalid!');
   });
 });
